@@ -204,6 +204,7 @@ jobs:
           COMPOSE_PROFILES: ${{ inputs.type == 'api' && 'api' || '' }}
           TEST_MODE: ${{ startsWith(inputs.type, 'api') && 'api' || 'true' }}
           FIPS_OVERRIDE: ${{ inputs.fips && '-f docker-compose-ci.fips.yml' || '' }}
+          BROKER: nats
         run: |
           read -r -a fips_override <<< "$FIPS_OVERRIDE"
           DEBUG_LOG_LEVEL=${DEBUG_LOG_LEVEL:-0} docker compose -f docker-compose-ci.yml "${fips_override[@]}" up -d --wait
