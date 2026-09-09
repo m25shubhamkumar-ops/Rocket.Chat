@@ -88,6 +88,7 @@ import { getUserFromParams } from '../lib/getUserFromParams';
 import { getUserInfo } from '../lib/getUserInfo';
 import { isUserFromParams } from '../lib/isUserFromParams';
 import { isValidQuery } from '../lib/isValidQuery';
+import { parseCustomFieldsFilter } from '../lib/parseCustomFieldsFilter';
 import { queryFiltersStatus } from '../lib/queryFiltersStatus';
 import { findPaginatedUsersByStatus, findUsersToAutocomplete, getInclusiveFields, getNonEmptyFields, getNonEmptyQuery } from '../lib/users';
 
@@ -675,6 +676,10 @@ API.v1.addRoute(
 			}
 			const canViewFullOtherUserInfo = await hasPermissionAsync(this.user, 'view-full-other-user-info');
 
+			if ((this.queryParams.customFields || this.queryParams.includeCustomFields === 'true') && !canViewFullOtherUserInfo) {
+				return API.v1.forbidden();
+			}
+
 			const { offset, count } = await getPaginationItems(this.queryParams);
 			const { sort, fields, query } = await this.parseJsonQuery();
 
@@ -718,6 +723,10 @@ API.v1.addRoute(
 				throw new Meteor.Error('error-invalid-query', isValidQuery.errors.join('\n'));
 			}
 
+			if ('customFields' in this.queryParams && this.queryParams.customFields) {
+				Object.assign(nonEmptyQuery, parseCustomFieldsFilter(this.queryParams.customFields));
+			}
+
 			const hidden = await getUsersHiddenFrom(this.userId);
 
 			if (hidden && queryFiltersStatus(query)) {
@@ -749,7 +758,10 @@ API.v1.addRoute(
 						$match: nonEmptyQuery,
 					},
 					{
-						$project: inclusiveFields,
+						$project: {
+							...inclusiveFields,
+							...(this.queryParams.includeCustomFields === 'true' && { customFields: 1 }),
+						},
 					},
 					{
 						$addFields: {
