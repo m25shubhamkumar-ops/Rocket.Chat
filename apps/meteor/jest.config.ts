@@ -45,6 +45,7 @@ export default {
 				'<rootDir>/app/utils/lib/**.spec.ts',
 				'<rootDir>/server/lib/auditServerEvents/**.spec.ts',
 				'<rootDir>/server/services/import/**/*.spec.ts',
+				'<rootDir>/server/services/upload/*.spec.ts',
 				'<rootDir>/server/settings/lib/**.spec.ts',
 				'<rootDir>/server/startup/migrations/**.spec.ts',
 				'<rootDir>/server/cron/**.spec.ts',
